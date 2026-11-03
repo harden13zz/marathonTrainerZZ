@@ -39,8 +39,8 @@ struct SettingsView: View {
                         let service = LiveHeartRateService()
                         service.startMonitoring(workoutStart: Date())
                         try? await Task.sleep(nanoseconds: 3_000_000_000)
-                        if let hr = service.currentHeartRate, hr > 0 {
-                            healthTestResult = "✅ 授权成功，心率：\(Int(hr)) bpm"
+                        if service.currentHeartRate > 0 {
+                            healthTestResult = "✅ 授权成功，心率：\(Int(service.currentHeartRate)) bpm"
                         } else if let err = service.error {
                             healthTestResult = "❌ 错误：\(err)"
                         } else {
