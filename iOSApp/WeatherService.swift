@@ -67,7 +67,9 @@ final class WeatherService: ObservableObject {
             throw NSError(domain: "Weather", code: 1, userInfo: [NSLocalizedDescriptionKey: "天气请求失败"])
         }
 
-        let decoded = try JSONDecoder().decode(OpenMeteoResponse.self, from: data)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let decoded = try decoder.decode(OpenMeteoResponse.self, from: data)
         return buildSnapshot(from: decoded, trainingStart: trainingStart, trainingEnd: trainingEnd)
     }
 
@@ -82,7 +84,15 @@ final class WeatherService: ObservableObject {
             targetHour = Calendar.current.component(.hour, from: Date())
         }
 
-        let idx = min(targetHour, (hourly.temperature2m?.count ?? 1) - 1)
+        let hourlyCount = hourly.temperature2m?.count ?? 0
+        guard hourlyCount > 0 else {
+            return WeatherSnapshot(
+                condition: "unknown", tempC: 20, feelsLikeC: 20, humidityPercent: 50,
+                precipMm: 0, windKmh: 0, uvIndex: nil, riskLevel: .low,
+                trainingWindowStart: trainingStart, trainingWindowEnd: trainingEnd
+            )
+        }
+        let idx = min(targetHour, hourlyCount - 1)
 
         let temp = hourly.temperature2m?[idx] ?? 20
         let feels = hourly.apparentTemperature?[idx] ?? temp

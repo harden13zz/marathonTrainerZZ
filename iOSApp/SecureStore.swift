@@ -49,7 +49,7 @@ final class SecureStore: ObservableObject {
     private func get(_ key: SecureKey) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecService as String: service,
+            kSecAttrService as String: service,
             kSecAttrAccount as String: key.rawValue,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
@@ -64,7 +64,7 @@ final class SecureStore: ObservableObject {
         let data = Data(value.utf8)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecService as String: service,
+            kSecAttrService as String: service,
             kSecAttrAccount as String: key.rawValue,
         ]
         let attributes: [String: Any] = [kSecValueData as String: data]

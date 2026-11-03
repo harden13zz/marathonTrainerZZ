@@ -160,7 +160,6 @@ final class WorkoutEngine: ObservableObject {
     }
 
     private func triggerHaptic() {
-        let generator = UIFeedbackGenerator()
         let notification = UINotificationFeedbackGenerator()
         notification.notificationOccurred(.warning)
     }

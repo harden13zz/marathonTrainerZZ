@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct TodayView: View {
     @StateObject private var weather = WeatherService()
@@ -68,22 +69,33 @@ struct TodayView: View {
     }
 
     private func loadToday() {
+        let dayStart = Calendar.current.startOfDay(for: Date())
         let descriptor = FetchDescriptor<TrainingSessionRecord>(
-            predicate: #Predicate { $date >= Calendar.current.startOfDay(for: Date()) }
+            predicate: #Predicate { $0.date >= dayStart },
+            sortBy: [SortDescriptor(\.date)]
         )
-        if let record = try? context.fetch(descriptor).first,
+        if let record = (try? context.fetch(descriptor))?.first,
            let data = record.segmentsJson.data(using: .utf8),
            let segments = try? JSONDecoder().decode([Segment].self, from: data) {
             todaySession = TrainingSessionSchema(
-                id: record.id, sessionType: .easy, title: record.title,
+                id: record.id,
+                sessionType: TrainingSessionSchema.SessionType(rawValue: record.sessionType) ?? .easy,
+                title: record.title,
                 totalDistanceKm: record.totalDistanceKm,
                 totalEstimatedTimeMin: record.totalEstimatedTimeMin,
-                segments: segments, wasDowngraded: record.wasDowngraded
+                segments: segments,
+                weatherNote: record.weatherNote,
+                wasDowngraded: record.wasDowngraded
             )
         }
 
         Task {
-            await weather.fetchWeather(latitude: 34.34, longitude: 108.94)
+            let city = SecureStore.shared.fixedCity.trimmingCharacters(in: .whitespaces)
+            if city.isEmpty {
+                await weather.fetchWeather(latitude: 34.34, longitude: 108.94)
+            } else {
+                await weather.fetchWeather(city: city)
+            }
         }
     }
 }

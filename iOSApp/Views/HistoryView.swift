@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct HistoryView: View {
     @Query(sort: \TrainingLogRecord.startTime, order: .reverse) private var logs: [TrainingLogRecord]

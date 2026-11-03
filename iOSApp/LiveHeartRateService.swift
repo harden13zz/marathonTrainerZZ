@@ -17,7 +17,18 @@ final class LiveHeartRateService: ObservableObject {
     func startMonitoring(workoutStart: Date) {
         isMonitoring = true
         error = nil
-        schedulePolling(workoutStart: workoutStart)
+        Task {
+            await requestAuthorization()
+            schedulePolling(workoutStart: workoutStart)
+        }
+    }
+
+    private func requestAuthorization() async {
+        do {
+            try await store.requestAuthorization(toShare: [], read: [Self.heartRateType])
+        } catch {
+            self.error = "HealthKit 授权失败：\(error.localizedDescription)"
+        }
     }
 
     func stopMonitoring() {
@@ -44,7 +55,7 @@ final class LiveHeartRateService: ObservableObject {
             predicate: predicate,
             limit: 1,
             sortDescriptors: sort
-        ) { [weak self] results, queryError in
+        ) { [weak self] _, results, queryError in
             Task { @MainActor in
                 guard let self else { return }
                 if let err = queryError {
@@ -69,7 +80,7 @@ final class LiveHeartRateService: ObservableObject {
 
         return await withCheckedContinuation { continuation in
             let q = HKSampleQuery(sampleType: .workoutType(), predicate: predicate,
-                                  limit: 100, sortDescriptors: sort) { results, _ in
+                                  limit: 100, sortDescriptors: sort) { _, results, _ in
                 continuation.resume(returning: (results as? [HKWorkout]) ?? [])
             }
             store.execute(q)
@@ -85,7 +96,7 @@ final class LiveHeartRateService: ObservableObject {
 
         return await withCheckedContinuation { continuation in
             let q = HKSampleQuery(sampleType: hrvType, predicate: predicate,
-                                  limit: 1, sortDescriptors: sort) { results, _ in
+                                  limit: 1, sortDescriptors: sort) { _, results, _ in
                 let sample = results?.first as? HKQuantitySample
                 let value = sample?.quantity.doubleValue(for: HKUnit.millisecond())
                 continuation.resume(returning: value)
@@ -103,7 +114,7 @@ final class LiveHeartRateService: ObservableObject {
 
         return await withCheckedContinuation { continuation in
             let q = HKSampleQuery(sampleType: type, predicate: predicate,
-                                  limit: 1, sortDescriptors: sort) { results, _ in
+                                  limit: 1, sortDescriptors: sort) { _, results, _ in
                 let sample = results?.first as? HKQuantitySample
                 let unit = HKUnit.count().unitDivided(by: .minute())
                 continuation.resume(returning: sample?.quantity.doubleValue(for: unit))
@@ -120,7 +131,7 @@ final class LiveHeartRateService: ObservableObject {
 
         return await withCheckedContinuation { continuation in
             let q = HKSampleQuery(sampleType: type, predicate: predicate,
-                                  limit: HKObjectQueryNoLimit, sortDescriptors: nil) { results, _ in
+                                  limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, results, _ in
                 guard let samples = results as? [HKCategorySample], !samples.isEmpty else {
                     continuation.resume(returning: nil)
                     return
