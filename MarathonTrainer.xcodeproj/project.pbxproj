@@ -83,7 +83,7 @@
 		B000000000000000000000052 /* iOSApp */ = {
 			isa = PBXGroup;
 			children = (
-				B000000000000000000000061 /* Views */,
+				B000000000000000000000063 /* Views */,
 				B000000000000000000000003 /* PhoneConnectivity.swift */,
 				B000000000000000000000005 /* HealthKitService.swift */,
 				B000000000000000000000054 /* Resources */,
@@ -96,7 +96,7 @@
 		B000000000000000000000053 /* WatchApp */ = {
 			isa = PBXGroup;
 			children = (
-				B000000000000000000000062 /* Views */,
+				B000000000000000000000064 /* Views */,
 				B00000000000000000000000A /* WatchConnectivityClient.swift */,
 				B00000000000000000000000B /* WatchStyle.swift */,
 				B000000000000000000000006 /* WorkoutService.swift */,
@@ -132,7 +132,7 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		B000000000000000000000061 /* Views */ = {
+		B000000000000000000000063 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				B000000000000000000000002 /* ContentView.swift */,
@@ -140,7 +140,7 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		B000000000000000000000062 /* Views */ = {
+		B000000000000000000000064 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				B000000000000000000000009 /* WatchContentView.swift */,
