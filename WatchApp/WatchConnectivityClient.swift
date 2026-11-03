@@ -96,6 +96,12 @@ extension WatchConnectivityClient: WCSessionDelegate {
         }
     }
 
+    nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
+
+    nonisolated func sessionDidDeactivate(_ session: WCSession) {
+        session.activate()
+    }
+
     nonisolated func session(
         _ session: WCSession,
         didReceiveMessage message: [String: Any]

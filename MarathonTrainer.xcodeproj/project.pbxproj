@@ -162,7 +162,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				B000000000000000000000072 /* PBXTargetDependency */,
 			);
 			name = MarathonTrainer;
 			productName = MarathonTrainer;
