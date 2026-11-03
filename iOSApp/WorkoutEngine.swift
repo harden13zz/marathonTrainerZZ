@@ -113,6 +113,7 @@ final class WorkoutEngine: ObservableObject {
         elapsedSec += 1
         currentHR = hrService.currentHeartRate
         distanceMeters = distanceService.distanceMeters
+        currentPaceSecPerKm = distanceService.currentPaceSecPerKm
 
         if let dist = estimateDistance() {
             distanceMeters = max(distanceMeters, dist)

@@ -292,9 +292,10 @@ struct WorkoutActiveView: View {
             }
             .padding(.horizontal)
 
-            HStack(spacing: 30) {
+            HStack(spacing: 20) {
                 MetricView(label: "心率", value: engine.currentHR > 0 ? "\(Int(engine.currentHR))" : "--", unit: "bpm")
                 MetricView(label: "距离", value: String(format: "%.2f", engine.distanceMeters / 1000), unit: "km")
+                MetricView(label: "配速", value: engine.currentPaceSecPerKm.map { PaceParser.fromSecondsPerKm($0) } ?? "--", unit: "/km")
             }
 
             if let alert = engine.alertMessage {
