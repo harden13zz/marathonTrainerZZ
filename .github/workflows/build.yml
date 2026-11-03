@@ -26,6 +26,8 @@ jobs:
       # ------------------------------------------------------------------
       - name: Apply bundle identifier prefix
         shell: bash
+        env:
+          MT_BUNDLE_PREFIX: ${{ vars.MT_BUNDLE_PREFIX }}
         run: |
           set -euo pipefail
           PREFIX="${MT_BUNDLE_PREFIX:-}"
