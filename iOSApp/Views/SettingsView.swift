@@ -30,6 +30,18 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
+
+            Section("健康数据") {
+                Button("测试健康授权") {
+                    Task {
+                        let service = LiveHeartRateService()
+                        service.startMonitoring(workoutStart: Date())
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        service.stopMonitoring()
+                    }
+                }
+                .tint(.blue)
+            }
         }
         .navigationTitle("设置")
     }
