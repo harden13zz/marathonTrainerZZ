@@ -16,6 +16,9 @@ xcuserdata/
 *.mobileprovision
 *.provisionprofile
 
+# 本地凭据：绝对不能提交
+.secrets/
+
 # 构建日志
 *.log
 

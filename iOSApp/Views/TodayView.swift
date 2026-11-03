@@ -70,11 +70,8 @@ struct TodayView: View {
 
     private func loadToday() {
         let dayStart = Calendar.current.startOfDay(for: Date())
-        let descriptor = FetchDescriptor<TrainingSessionRecord>(
-            predicate: #Predicate { $0.date >= dayStart },
-            sortBy: [SortDescriptor(\.date)]
-        )
-        if let record = (try? context.fetch(descriptor))?.first,
+        let all = (try? context.fetch(FetchDescriptor<TrainingSessionRecord>())) ?? []
+        if let record = all.filter({ $0.date >= dayStart }).min(by: { $0.date < $1.date }),
            let data = record.segmentsJson.data(using: .utf8),
            let segments = try? JSONDecoder().decode([Segment].self, from: data) {
             todaySession = TrainingSessionSchema(

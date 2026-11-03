@@ -98,7 +98,7 @@ final class LiveHeartRateService: ObservableObject {
             let q = HKSampleQuery(sampleType: hrvType, predicate: predicate,
                                   limit: 1, sortDescriptors: sort) { _, results, _ in
                 let sample = results?.first as? HKQuantitySample
-                let value = sample?.quantity.doubleValue(for: HKUnit.millisecond())
+                let value = sample?.quantity.doubleValue(for: .secondUnit(with: .milli))
                 continuation.resume(returning: value)
             }
             store.execute(q)
