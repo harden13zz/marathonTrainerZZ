@@ -122,10 +122,7 @@ struct TodayView: View {
         isGeneratingPlan = true
         defer { isGeneratingPlan = false }
 
-        let profile = UserProfileSchema(
-            age: 30, heightCm: 175, weightKg: 70, gender: "male",
-            vo2maxEstimate: 45, targetMarathonDistanceKm: 42.195, targetFinishTimeMin: 270
-        )
+        let profile = SecureStore.shared.userProfile
         let assessor = RecoveryAssessor()
         let inputs = await assessor.fetchTodayRecovery()
         let recoverySnapshot = assessor.assess(inputs: inputs)

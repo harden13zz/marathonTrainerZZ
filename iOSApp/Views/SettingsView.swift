@@ -6,6 +6,23 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section("跑者档案") {
+                TextField("年龄", text: $secure.runnerAge)
+                    .keyboardType(.numberPad)
+                TextField("身高 (cm)", text: $secure.runnerHeight)
+                    .keyboardType(.decimalPad)
+                TextField("体重 (kg)", text: $secure.runnerWeight)
+                    .keyboardType(.decimalPad)
+                Picker("性别", selection: $secure.runnerGender) {
+                    Text("男").tag("male")
+                    Text("女").tag("female")
+                }
+                TextField("目标马拉松距离 (km)", text: $secure.targetDistance)
+                    .keyboardType(.decimalPad)
+                TextField("目标完赛时间 (分钟)", text: $secure.targetTime)
+                    .keyboardType(.numberPad)
+            }
+
             Section("大模型 API") {
                 TextField("Base URL", text: $secure.llmBaseURL)
                     .keyboardType(.URL)
