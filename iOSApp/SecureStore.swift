@@ -38,9 +38,9 @@ final class SecureStore: ObservableObject {
     }
 
     private func loadAll() {
-        llmBaseURL = get(.llmBaseURL) ?? "https://api.deepseek.com/v1"
+        llmBaseURL = get(.llmBaseURL) ?? "https://api.qnaigc.com/v1"
         llmAPIKey = get(.llmAPIKey) ?? ""
-        llmModel = get(.llmModel) ?? "deepseek-chat"
+        llmModel = get(.llmModel) ?? "deepseek/deepseek-v4-flash-20260731"
         fixedCity = get(.fixedCity) ?? ""
         hrSafeMax = get(.hrSafeMax) ?? "190"
         voiceEnabled = (get(.voiceEnabled) ?? "1") == "1"
