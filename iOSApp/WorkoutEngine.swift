@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import UIKit
+import Combine
 
 @MainActor
 final class WorkoutEngine: ObservableObject {
@@ -27,6 +28,7 @@ final class WorkoutEngine: ObservableObject {
     private let hrService = LiveHeartRateService()
     private let distanceService = DistanceService()
     private let speechSynth = AVSpeechSynthesizer()
+    private var hrObservation: Any?
 
     var currentSegment: Segment? {
         guard let segs = session?.segments, currentSegmentIndex < segs.count else { return nil }
@@ -54,6 +56,12 @@ final class WorkoutEngine: ObservableObject {
         startTime = Date()
 
         hrService.startMonitoring(workoutStart: Date())
+        // 观察心率更新
+        hrObservation = hrService.$currentHeartRate.sink { [weak self] hr in
+            Task { @MainActor in
+                self?.currentHR = hr
+            }
+        }
         distanceService.startTracking()
         startTimer()
         speak("开始训练：\(session.title)")
@@ -75,8 +83,20 @@ final class WorkoutEngine: ObservableObject {
         state = .finished
         timer?.invalidate()
         hrService.stopMonitoring()
+        hrObservation = nil
         distanceService.stopTracking()
         speak("训练结束")
+    }
+
+    func reset() {
+        state = .idle
+        currentSegmentIndex = 0
+        elapsedSec = 0
+        distanceMeters = 0
+        currentHR = 0
+        alertMessage = nil
+        session = nil
+        startTime = nil
     }
 
     // MARK: - 计时与判定

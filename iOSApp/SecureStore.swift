@@ -56,9 +56,12 @@ final class SecureStore: ObservableObject {
     }
 
     private func loadAll() {
+        // LLM 配置：首次启动时提示用户配置，之后从 Keychain 读取
+        // 注意：API Key 不能硬编码在代码里（安全原因）
         llmBaseURL = get(.llmBaseURL) ?? "https://api.qnaigc.com/v1"
         llmAPIKey = get(.llmAPIKey) ?? ""
-        llmModel = get(.llmModel) ?? "deepseek/deepseek-v4-flash-20260731"
+        llmModel = get(.llmModel) ?? "qiniu/conatus-free"
+        
         fixedCity = get(.fixedCity) ?? ""
         hrSafeMax = get(.hrSafeMax) ?? "190"
         voiceEnabled = (get(.voiceEnabled) ?? "1") == "1"

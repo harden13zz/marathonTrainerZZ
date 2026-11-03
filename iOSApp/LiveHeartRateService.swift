@@ -9,7 +9,8 @@ final class LiveHeartRateService: ObservableObject {
     @Published var error: String?
 
     private let store = HKHealthStore()
-    private var query: HKSampleQuery?
+    private var observerQuery: HKObserverQuery?
+    private var anchorQuery: HKAnchoredObjectQuery?
     private var timer: Timer?
 
     private static let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate)!
@@ -19,7 +20,7 @@ final class LiveHeartRateService: ObservableObject {
         error = nil
         Task {
             await requestAuthorization()
-            schedulePolling(workoutStart: workoutStart)
+            startObserving(workoutStart: workoutStart)
         }
     }
 
@@ -33,41 +34,67 @@ final class LiveHeartRateService: ObservableObject {
 
     func stopMonitoring() {
         isMonitoring = false
+        if let query = observerQuery {
+            store.stop(query)
+        }
+        observerQuery = nil
+        anchorQuery = nil
         timer?.invalidate()
         timer = nil
     }
 
-    private func schedulePolling(workoutStart: Date) {
-        timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
+    private func startObserving(workoutStart: Date) {
+        // 使用 HKObserverQuery 实时监听心率变化
+        let query = HKObserverQuery(sampleType: Self.heartRateType, predicate: nil) { [weak self] _, completionHandler, error in
             Task { @MainActor in
-                self?.fetchLatestHR(since: workoutStart)
+                guard let self else { return }
+                if let err = error {
+                    self.error = err.localizedDescription
+                } else {
+                    await self.fetchLatestHR(since: workoutStart)
+                }
+                completionHandler()
             }
         }
-        fetchLatestHR(since: workoutStart)
+        
+        store.execute(query)
+        observerQuery = query
+        
+        // 立即获取一次
+        Task { @MainActor in
+            await fetchLatestHR(since: workoutStart)
+        }
     }
 
-    private func fetchLatestHR(since date: Date) {
+    private func fetchLatestHR(since date: Date) async {
         let predicate = HKQuery.predicateForSamples(withStart: date, end: Date(), options: .strictStartDate)
         let sort = [NSSortDescriptor(keyPath: \HKSample.startDate, ascending: false)]
 
-        let sampleQuery = HKSampleQuery(
-            sampleType: Self.heartRateType,
-            predicate: predicate,
-            limit: 1,
-            sortDescriptors: sort
-        ) { [weak self] _, results, queryError in
-            Task { @MainActor in
-                guard let self else { return }
-                if let err = queryError {
-                    self.error = err.localizedDescription
-                    return
+        return await withCheckedContinuation { continuation in
+            let sampleQuery = HKSampleQuery(
+                sampleType: Self.heartRateType,
+                predicate: predicate,
+                limit: 1,
+                sortDescriptors: sort
+            ) { [weak self] _, results, queryError in
+                Task { @MainActor in
+                    guard let self else { return }
+                    if let err = queryError {
+                        self.error = err.localizedDescription
+                        continuation.resume()
+                        return
+                    }
+                    guard let sample = results?.first as? HKQuantitySample else {
+                        continuation.resume()
+                        return
+                    }
+                    let unit = HKUnit.count().unitDivided(by: .minute())
+                    self.currentHeartRate = sample.quantity.doubleValue(for: unit)
+                    continuation.resume()
                 }
-                guard let sample = results?.first as? HKQuantitySample else { return }
-                let unit = HKUnit.count().unitDivided(by: .minute())
-                self.currentHeartRate = sample.quantity.doubleValue(for: unit)
             }
+            store.execute(sampleQuery)
         }
-        store.execute(sampleQuery)
     }
 
     // MARK: - 历史数据查询（Task 2 用）

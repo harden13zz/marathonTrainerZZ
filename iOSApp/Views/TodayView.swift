@@ -16,6 +16,10 @@ struct TodayView: View {
             Group {
                 if engine.state == .running || engine.state == .paused {
                     WorkoutActiveView(engine: engine)
+                } else if engine.state == .finished {
+                    WorkoutSummaryView(engine: engine) {
+                        engine.reset()
+                    }
                 } else {
                     todayContent
                 }
@@ -145,26 +149,78 @@ struct TodayView: View {
     }
 }
 
+// MARK: - 训练总结视图
+
+struct WorkoutSummaryView: View {
+    @ObservedObject var engine: WorkoutEngine
+    var onDone: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 60))
+                .foregroundStyle(.green)
+
+            Text("训练完成！")
+                .font(.title2.bold())
+
+            VStack(spacing: 12) {
+                MetricView(label: "总时间", value: engine.elapsedText, unit: "")
+                MetricView(label: "总距离", value: String(format: "%.2f", engine.distanceMeters / 1000), unit: "km")
+                MetricView(label: "平均心率", value: engine.currentHR > 0 ? "\(Int(engine.currentHR))" : "--", unit: "bpm")
+            }
+            .padding()
+
+            Button {
+                onDone()
+            } label: {
+                Label("返回", systemImage: "arrow.left")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.blue)
+        }
+        .padding()
+    }
+}
+
 // MARK: - 恢复状态徽章
 
 struct RecoveryBadgeView: View {
     let recovery: RecoverySnapshot
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
                 Text(recoveryLevelText).font(.headline)
+                Spacer()
+                Circle()
+                    .fill(recoveryLevelColor)
+                    .frame(width: 12, height: 12)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
                 if let hrv = recovery.morningHrvSdnn {
-                    Text("HRV: \(Int(hrv)) ms").font(.caption).foregroundStyle(.secondary)
+                    Label("HRV: \(Int(hrv)) ms", systemImage: "heart.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 if let sleep = recovery.sleepTotalMin {
-                    Text("睡眠：\(Int(sleep/60))h \(Int(sleep.truncatingRemainder(dividingBy: 60)))m").font(.caption).foregroundStyle(.secondary)
+                    Label("睡眠：\(Int(sleep/60))h \(Int(sleep.truncatingRemainder(dividingBy: 60)))m", systemImage: "bed.double.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let restingHR = recovery.restingHr {
+                    Label("静息心率：\(Int(restingHR)) bpm", systemImage: "heart")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            Spacer()
-            Circle()
-                .fill(recoveryLevelColor)
-                .frame(width: 12, height: 12)
+
+            Text(recoveryExplanation)
+                .font(.caption)
+                .foregroundStyle(recoveryLevelColor)
+                .padding(.top, 4)
         }
     }
 
@@ -181,6 +237,37 @@ struct RecoveryBadgeView: View {
         case .normal: return .green
         case .mildFatigue: return .yellow
         case .highFatigue: return .red
+        }
+    }
+
+    private var recoveryExplanation: String {
+        switch recovery.recoveryLevel {
+        case .normal:
+            return "各项指标正常，可以正常训练"
+        case .mildFatigue:
+            var reasons: [String] = []
+            if let hrv = recovery.morningHrvSdnn, hrv < 50 {
+                reasons.append("HRV 偏低")
+            }
+            if let sleep = recovery.sleepTotalMin, sleep < 7 * 60 {
+                reasons.append("睡眠不足")
+            }
+            if let hr = recovery.restingHr, hr > 75 {
+                reasons.append("静息心率偏高")
+            }
+            return "建议降低强度：\(reasons.joined(separator: "、"))"
+        case .highFatigue:
+            var reasons: [String] = []
+            if let hrv = recovery.morningHrvSdnn, hrv < 40 {
+                reasons.append("HRV 过低")
+            }
+            if let sleep = recovery.sleepTotalMin, sleep < 6 * 60 {
+                reasons.append("严重睡眠不足")
+            }
+            if let hr = recovery.restingHr, hr > 85 {
+                reasons.append("静息心率过高")
+            }
+            return "建议休息：\(reasons.joined(separator: "、"))"
         }
     }
 }

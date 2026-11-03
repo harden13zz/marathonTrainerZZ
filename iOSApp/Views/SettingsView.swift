@@ -6,6 +6,16 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section("⚠️ 首次使用配置") {
+                Text("请在下方填写七牛 API Key（从 https://portal.qiniu.com/ai-inference/api-key 获取）")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                SecureField("API Key", text: $secure.llmAPIKey)
+                Text("Base URL 和模型已自动配置")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("跑者档案") {
                 TextField("年龄", text: $secure.runnerAge)
                     .keyboardType(.numberPad)
@@ -21,15 +31,6 @@ struct SettingsView: View {
                     .keyboardType(.decimalPad)
                 TextField("目标完赛时间 (分钟)", text: $secure.targetTime)
                     .keyboardType(.numberPad)
-            }
-
-            Section("大模型 API") {
-                TextField("Base URL", text: $secure.llmBaseURL)
-                    .keyboardType(.URL)
-                    .autocorrectionDisabled()
-                SecureField("API Key", text: $secure.llmAPIKey)
-                TextField("模型名称", text: $secure.llmModel)
-                    .autocorrectionDisabled()
             }
 
             Section("天气与定位") {
