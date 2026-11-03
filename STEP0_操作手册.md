@@ -37,19 +37,88 @@
 
 ---
 
-## 1. 建仓库 + 推代码
+## 1. 建公开仓库 + 推代码
+
+### 1.1 为什么必须是 Public（这一点最关键）
+
+| | 公共仓库 | 私有仓库 |
+|---|---|---|
+| macOS 构建分钟数 | **免费不限量** | 每月 2000 分钟，且 macOS **按 10 倍扣** |
+| 实际可用 | 无限次构建 | 约 **200 分钟 / 月** ≈ 20 次构建 |
+
+一次 iOS + watchOS 编译约 10 分钟，私有仓库扣 100 分钟额度。Step 0 调试期要反复「改 → 推 → 编译」，私人仓库两三天就会耗尽额度，之后整个月都无法构建。
+
+**公开仓库没有任何泄密风险**，因为仓库里只有：Swift 源码、包名 `com.xxx.marathontrainer`（App Store 上也公开可见）、以及 `MT_BUNDLE_PREFIX` 这类仓库变量。
+
+> ⚠️ **唯一要守住的底线**：以后接入大模型 / 天气服务的 **API Key 绝不能写进代码或 plist**，只能存到 App 内的 Keychain（见项目文档 Task 3）。守住这条，公开仓库就安全。
+
+### 1.2 网页建仓库
+
+打开 <https://github.com/new>，只填这几处：
+
+| 字段 | 填什么 |
+|---|---|
+| **Repository name** | `MarathonTrainer` |
+| **Description** | 可不填 |
+| **可见性** | 选 **Public** |
+| **Add a README file** | ❌ **不要勾** |
+| **Add .gitignore** | ❌ **不要勾** |
+| **Choose a license** | ❌ **不要勾** |
+
+> 下面三个**一个都不要勾**。勾了任何一个，GitHub 都会生成一个初始 commit，你 push 时就会因为历史不一致被拒绝，还得处理 `--allow-unrelated-histories` 白白增加麻烦。我们要一个完全空的仓库。
+
+点 **Create repository**。
+
+### 1.3 本地 push
 
 ```powershell
 # 在项目根目录（C:\software\code\pyproject\marathonTrainer）
-git init
+git init                    # 若已初始化可跳过
+git branch -M main
 git add .
 git commit -m "Step 0: skeleton"
-git branch -M main
+
+# 让 Windows 凭据管理器记住登录状态，避免每次都要输 token
+git config --global credential.helper manager
+
 git remote add origin https://github.com/<你的用户名>/MarathonTrainer.git
 git push -u origin main
 ```
 
-仓库设为 **Public**（Actions 免费额度对公共仓库不限额）。
+### 1.4 认证：密码栏要填 Token，不是登录密码
+
+`git push` 弹窗要求登录时，**密码栏不能填 GitHub 登录密码**，必须填 Personal Access Token：
+
+1. 打开 <https://github.com/settings/tokens?type=beta>（Fine-grained token）
+2. **Generate new token** → 名称随意，过期 90 天
+3. **Repository access** → `Only select repositories` → 选 `MarathonTrainer`
+4. **Permissions** → `Repository permissions` → **Contents** → **Read and write**
+5. 生成后复制那串 `github_pat_...`（**只显示一次**）
+6. 回到终端：用户名填 GitHub 用户名，密码栏粘贴 token
+
+**常见 push 失败**：
+
+| 报错 | 原因 | 解决 |
+|---|---|---|
+| `remote contains work that you do not have locally` | 建仓库时勾了 README / license | `git pull origin main --allow-unrelated-histories` 后解决冲突再 push |
+| `Authentication failed` | 密码栏填了登录密码 | 改成 token，见本节 |
+| `Repository not found` | 用户名拼错或仓库未创建 | `git remote -v` 确认地址 |
+
+### 1.5 日常怎么改代码（不需要本地 IDE）
+
+**这台 Windows 上不装 IDEA、也不装 VS Code**——Swift 在 Windows 上编译不了，装了也没用，编辑器只会满屏标红 `import SwiftUI`（那是环境没有库，不是代码错了）。
+
+改代码全部在浏览器里：
+
+```
+github.com → 你的仓库 → Code 下拉 → Codespaces 标签 → Create codespace on main
+```
+
+打开就是网页版 VS Code（左边文件树、中间编辑器、下面终端），跑在微软服务器上。改完在它的终端里 `git commit && git push`，Actions 自动开始编译。
+
+> Codespace 免费额度每月 60 核时（2 核机器约 30 小时）。用完到 <https://github.com/codespaces> 里 **Stop** 掉，别一直开着。
+
+本地真正需要装的软件只有：**Git**（已装）和签名用的 **Sideloadly + 桌面版 iTunes**。
 
 ---
 
@@ -68,7 +137,9 @@ git push -u origin main
 
 ## 3. 跑第一次构建
 
-推送后自动触发，或手动 `Actions → Build IPA → Run workflow`。
+推送后自动触发，或手动 `Actions → Build IPA (Step 0 - free Apple ID signing) → Run workflow`。
+
+> ⚠️ **必须先去第 2 节配好 `MT_BUNDLE_PREFIX`**，否则构建会在第一步报错退出。
 
 第一次大概率失败——这一步的目的就是**看编译错误**。常见几类：
 
