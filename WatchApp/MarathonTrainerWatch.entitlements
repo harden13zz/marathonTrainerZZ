@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  手表侧必须能启动 WorkoutSession 并写运动记录。
+	  注意：手表端的 HealthKit 权限是独立的，需要手表自己在首次启动时弹窗，
+	  iPhone 上授权不等于手表已授权。
+	-->
+	<key>com.apple.developer.healthkit</key>
+	<true/>
+</dict>
+</plist>

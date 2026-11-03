@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Step 0 只保留免费签名「确定可用」的 entitlement。
+	  故意不写入：
+	    com.apple.developer.healthkit.access（clinical health records / 后台投递）
+	    aps-environment（推送，免费账号无此能力）
+	  这些会在需要时再单独验证，避免第一次构建就因 entitlements 不匹配失败。
+	-->
+	<key>com.apple.developer.healthkit</key>
+	<true/>
+</dict>
+</plist>

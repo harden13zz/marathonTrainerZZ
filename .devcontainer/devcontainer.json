@@ -1,0 +1,23 @@
+{
+  "name": "MarathonTrainer (Swift-only)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "swiftlang.swift-vscode",
+        "redhat.vscode-yaml",
+        "github.vscode-github-actions"
+      ],
+      "settings": {
+        "files.eol": "\n",
+        "editor.formatOnSave": false,
+        "swift.formatOnSave": false
+      }
+    }
+  },
+  "postCreateCommand": "sudo apt-get update -qq && sudo apt-get install -y -qq zip unzip libxml2-utils >/dev/null 2>&1 || true",
+  "remoteUser": "vscode"
+}

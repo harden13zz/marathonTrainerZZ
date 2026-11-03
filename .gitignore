@@ -1,0 +1,27 @@
+# macOS / Xcode
+DerivedData/
+build/
+build-watch/
+*.xcarchive
+*.ipa
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+*.hmap
+*.xcscmblueprint
+
+# 签名材料：绝对不能提交
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+
+# 构建日志
+*.log
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# 系统
+.DS_Store

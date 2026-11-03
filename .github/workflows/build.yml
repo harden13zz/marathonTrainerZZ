@@ -1,0 +1,129 @@
+name: Build IPA (Step 0 - free Apple ID signing)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一分支重复 push 时取消上一次，省 macOS 时长
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # 1. 把仓库里写着 com.yourname.* 的占位 Bundle ID 统一换成真实值。
+      #    真实值来自仓库变量 MT_BUNDLE_PREFIX（Settings → Variables）。
+      #    仓库变量是公开可见的，本身只是个包名，安全。
+      # ------------------------------------------------------------------
+      - name: Apply bundle identifier prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          PREFIX="${MT_BUNDLE_PREFIX:-}"
+          if [[ -z "$PREFIX" ]]; then
+            echo "::error::缺少仓库变量 MT_BUNDLE_PREFIX（例如 com.zhangsan），请到 Settings → Secrets and variables → Actions → Variables 添加"
+            exit 1
+          fi
+          echo "使用 Bundle ID 前缀：$PREFIX"
+          for f in MarathonTrainer.xcodeproj/project.pbxproj WatchApp/Info.plist; do
+            sed -i '' "s/com\.yourname\.marathontrainer/${PREFIX}.marathontrainer/g" "$f"
+          done
+          grep "PRODUCT_BUNDLE_IDENTIFIER" MarathonTrainer.xcodeproj/project.pbxproj
+          grep "WKCompanionAppBundleIdentifier" -A1 WatchApp/Info.plist
+
+      # ------------------------------------------------------------------
+      # 2. 分别构建 iOS 与 watchOS 产物（都不签名）。
+      #    注意：watchOS 产物必须是单独的 .app，不能走 iOS 的嵌入步骤。
+      #    免费签名下如果我们让 Xcode 自己嵌入+签名 Watch App 会失败；
+      #    这里交给我们手动放到 Payload/<iOSApp>/Watch/ 下，
+      #    Sideloadly 会用同一份 P12 对两个 App 做重签。
+      #   （Step 0 不导入 P12：签名由 Sideloadly 在 Windows 侧完成，
+      #     GitHub Secrets 里不需要放 Apple ID 证书。）
+      # ------------------------------------------------------------------
+      - name: Build iOS app (unsigned)
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project MarathonTrainer.xcodeproj \
+            -scheme MarathonTrainer \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            SYMROOT=build/products \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build > build-ios.log 2>&1 || true
+          tail -n 100 build-ios.log
+          grep -q "BUILD SUCCEEDED" build-ios.log || { echo "::error::iOS 构建失败"; exit 1; }
+          ls -la build/products/Release-iphoneos/ || true
+
+      - name: Build watch app (unsigned)
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project MarathonTrainer.xcodeproj \
+            -scheme MarathonTrainerWatch \
+            -configuration Release \
+            -sdk watchos \
+            -destination 'generic/platform=watchOS' \
+            -derivedDataPath build-watch \
+            SYMROOT=build-watch/products \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build > build-watch.log 2>&1 || true
+          tail -n 100 build-watch.log
+          grep -q "BUILD SUCCEEDED" build-watch.log || { echo "::error::watchOS 构建失败"; exit 1; }
+          ls -la build-watch/products/Release-watchos/ || true
+
+      - name: Assemble IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          IOS_APP="build/products/Release-iphoneos/MarathonTrainer.app"
+          WATCH_APP="build-watch/products/Release-watchos/MarathonTrainer Watch App.app"
+          test -d "$IOS_APP"   || { echo "::error::找不到 iOS App 产物"; ls -R build | head -n 80; exit 1; }
+          test -d "$WATCH_APP" || { echo "::error::找不到 Watch App 产物"; ls -R build-watch | head -n 80; exit 1; }
+
+          PAYLOAD="build/Payload"
+          mkdir -p "$PAYLOAD"
+          # ⚠️ 用 ditto 而不是 cp -R：保留符号链接、资源分叉与权限
+          ditto "$IOS_APP" "$PAYLOAD/MarathonTrainer.app"
+          mkdir -p "$PAYLOAD/MarathonTrainer.app/Watch"
+          ditto "$WATCH_APP" "$PAYLOAD/MarathonTrainer.app/Watch/MarathonTrainer Watch App.app"
+
+          echo "--- Payload 内容 ---"
+          find "$PAYLOAD" -maxdepth 3 | head -n 40
+
+          (cd build && /usr/bin/zip -qry MarathonTrainer.ipa Payload)
+          ls -lh build/MarathonTrainer.ipa
+
+      - name: Upload unsigned IPA (Sideloadly)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MarathonTrainer-unsigned-ipa
+          path: build/MarathonTrainer.ipa
+          if-no-files-found: error
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build-ios.log
+            build-watch.log
+          if-no-files-found: ignore
