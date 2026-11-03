@@ -37,7 +37,7 @@ struct TodayView: View {
                 }
             }
 
-            Section("今日课表") {
+            Section("今日训练") {
                 if let session = todaySession {
                     Text(session.title).font(.headline)
                     Text("\(session.segments.count) 段 · \(session.sessionType.rawValue)")
@@ -61,7 +61,7 @@ struct TodayView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
                 } else {
-                    Text("今日暂无课表")
+                    Text("今日暂无训练计划")
                         .foregroundStyle(.secondary)
                 }
             }
