@@ -28,6 +28,8 @@
 	<string>MarathonTrainer 需要把训练记录写入健康 App，以便与 Apple 健身记录同步。</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>用于按你的位置获取训练时段天气预报；如拒绝，可在设置中固定城市。</string>
+	<key>NSMotionUsageDescription</key>
+	<string>用于通过计步器估算跑步距离（免费账号无后台 GPS 的替代方案）。</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>

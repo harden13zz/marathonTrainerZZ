@@ -8,6 +8,8 @@ struct TodayView: View {
 
     @State private var todaySession: TrainingSessionSchema?
     @State private var showWorkout = false
+    @State private var recovery: RecoverySnapshot?
+    @State private var isGeneratingPlan = false
 
     var body: some View {
         NavigationStack {
@@ -34,6 +36,12 @@ struct TodayView: View {
             if let snapshot = weather.currentSnapshot {
                 Section("天气") {
                     WeatherCardView(snapshot: snapshot)
+                }
+            }
+
+            if let recovery = recovery {
+                Section("恢复状态") {
+                    RecoveryBadgeView(recovery: recovery)
                 }
             }
 
@@ -65,6 +73,16 @@ struct TodayView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            Section {
+                Button {
+                    Task { await generatePlan() }
+                } label: {
+                    Label(isGeneratingPlan ? "生成中..." : "生成本周计划", systemImage: "wand.and.stars")
+                        .frame(maxWidth: .infinity)
+                }
+                .disabled(isGeneratingPlan)
+            }
         }
     }
 
@@ -93,6 +111,79 @@ struct TodayView: View {
             } else {
                 await weather.fetchWeather(city: city)
             }
+
+            let assessor = RecoveryAssessor()
+            let inputs = await assessor.fetchTodayRecovery()
+            recovery = assessor.assess(inputs: inputs)
+        }
+    }
+
+    private func generatePlan() async {
+        isGeneratingPlan = true
+        defer { isGeneratingPlan = false }
+
+        let profile = UserProfileSchema(
+            age: 30, heightCm: 175, weightKg: 70, gender: "male",
+            vo2maxEstimate: 45, targetMarathonDistanceKm: 42.195, targetFinishTimeMin: 270
+        )
+        let assessor = RecoveryAssessor()
+        let inputs = await assessor.fetchTodayRecovery()
+        let recoverySnapshot = assessor.assess(inputs: inputs)
+
+        let input = PlanGenerator.PlanInput(
+            profile: profile,
+            recovery: recoverySnapshot,
+            weather: weather.currentSnapshot,
+            recentSessions: [],
+            weekNumber: 1
+        )
+
+        do {
+            let generator = PlanGenerator()
+            _ = try await generator.generateWeeklyPlan(input: input, context: context)
+            loadToday()
+        } catch {
+            print("计划生成失败：\(error.localizedDescription)")
+        }
+    }
+}
+
+// MARK: - 恢复状态徽章
+
+struct RecoveryBadgeView: View {
+    let recovery: RecoverySnapshot
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(recoveryLevelText).font(.headline)
+                if let hrv = recovery.morningHrvSdnn {
+                    Text("HRV: \(Int(hrv)) ms").font(.caption).foregroundStyle(.secondary)
+                }
+                if let sleep = recovery.sleepTotalMin {
+                    Text("睡眠：\(Int(sleep/60))h \(Int(sleep.truncatingRemainder(dividingBy: 60)))m").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            Circle()
+                .fill(recoveryLevelColor)
+                .frame(width: 12, height: 12)
+        }
+    }
+
+    private var recoveryLevelText: String {
+        switch recovery.recoveryLevel {
+        case .normal: return "状态良好"
+        case .mildFatigue: return "轻度疲劳"
+        case .highFatigue: return "高度疲劳"
+        }
+    }
+
+    private var recoveryLevelColor: Color {
+        switch recovery.recoveryLevel {
+        case .normal: return .green
+        case .mildFatigue: return .yellow
+        case .highFatigue: return .red
         }
     }
 }

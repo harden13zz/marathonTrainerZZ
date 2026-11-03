@@ -25,6 +25,7 @@ final class WorkoutEngine: ObservableObject {
     private var timer: Timer?
     private var startTime: Date?
     private let hrService = LiveHeartRateService()
+    private let distanceService = DistanceService()
     private let speechSynth = AVSpeechSynthesizer()
 
     var currentSegment: Segment? {
@@ -53,6 +54,7 @@ final class WorkoutEngine: ObservableObject {
         startTime = Date()
 
         hrService.startMonitoring(workoutStart: Date())
+        distanceService.startTracking()
         startTimer()
         speak("开始训练：\(session.title)")
     }
@@ -73,6 +75,7 @@ final class WorkoutEngine: ObservableObject {
         state = .finished
         timer?.invalidate()
         hrService.stopMonitoring()
+        distanceService.stopTracking()
         speak("训练结束")
     }
 
@@ -89,9 +92,10 @@ final class WorkoutEngine: ObservableObject {
         guard state == .running else { return }
         elapsedSec += 1
         currentHR = hrService.currentHeartRate
+        distanceMeters = distanceService.distanceMeters
 
         if let dist = estimateDistance() {
-            distanceMeters = dist
+            distanceMeters = max(distanceMeters, dist)
         }
 
         evaluateSegment()

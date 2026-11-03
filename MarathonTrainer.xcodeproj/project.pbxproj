@@ -31,6 +31,11 @@
 		B0000000000000000000000B8 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A8 /* HistoryView.swift */; };
 		B0000000000000000000000B9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A9 /* SettingsView.swift */; };
 		B0000000000000000000000C1 /* Schemas.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A1 /* Schemas.swift */; };
+		B0000000000000000000000D1 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000AA /* LLMService.swift */; };
+		B0000000000000000000000D2 /* PlanGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000AB /* PlanGenerator.swift */; };
+		B0000000000000000000000D3 /* DistanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000AC /* DistanceService.swift */; };
+		B0000000000000000000000D4 /* LoadCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000AD /* LoadCalculator.swift */; };
+		B0000000000000000000000D5 /* RecoveryAssessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000AE /* RecoveryAssessor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +65,11 @@
 		B0000000000000000000000A7 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		B0000000000000000000000A8 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		B0000000000000000000000A9 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000AA /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
+		B0000000000000000000000AB /* PlanGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanGenerator.swift; sourceTree = "<group>"; };
+		B0000000000000000000000AC /* DistanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceService.swift; sourceTree = "<group>"; };
+		B0000000000000000000000AD /* LoadCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadCalculator.swift; sourceTree = "<group>"; };
+		B0000000000000000000000AE /* RecoveryAssessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryAssessor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +121,11 @@
 				B0000000000000000000000A4 /* WeatherService.swift */,
 				B0000000000000000000000A5 /* LiveHeartRateService.swift */,
 				B0000000000000000000000A6 /* WorkoutEngine.swift */,
+				B0000000000000000000000AA /* LLMService.swift */,
+				B0000000000000000000000AB /* PlanGenerator.swift */,
+				B0000000000000000000000AC /* DistanceService.swift */,
+				B0000000000000000000000AD /* LoadCalculator.swift */,
+				B0000000000000000000000AE /* RecoveryAssessor.swift */,
 				B000000000000000000000054 /* Resources */,
 				B00000000000000000000000E /* Info.plist */,
 				B00000000000000000000001E /* MarathonTrainer.entitlements */,
@@ -288,6 +303,11 @@
 				B0000000000000000000000B4 /* WeatherService.swift in Sources */,
 				B0000000000000000000000B5 /* LiveHeartRateService.swift in Sources */,
 				B0000000000000000000000B6 /* WorkoutEngine.swift in Sources */,
+				B0000000000000000000000D1 /* LLMService.swift in Sources */,
+				B0000000000000000000000D2 /* PlanGenerator.swift in Sources */,
+				B0000000000000000000000D3 /* DistanceService.swift in Sources */,
+				B0000000000000000000000D4 /* LoadCalculator.swift in Sources */,
+				B0000000000000000000000D5 /* RecoveryAssessor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
