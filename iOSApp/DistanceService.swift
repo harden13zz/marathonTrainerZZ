@@ -4,7 +4,7 @@ import CoreLocation
 
 /// 基于 GPS + 计步器的距离和配速计算
 @MainActor
-final class DistanceService: ObservableObject, CLLocationManagerDelegate {
+final class DistanceService: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var distanceMeters: Double = 0
     @Published var stepCount: Int = 0
@@ -20,6 +20,10 @@ final class DistanceService: ObservableObject, CLLocationManagerDelegate {
     private var baselineDistance: Double = 0
     private var lastLocation: CLLocation?
     private var locationUpdates: [CLLocation] = []
+    
+    override init() {
+        super.init()
+    }
 
     func startTracking() {
         // 配置 GPS
