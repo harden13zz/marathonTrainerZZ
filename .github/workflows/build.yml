@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # ------------------------------------------------------------------
       # 1. 把仓库里写着 com.yourname.* 的占位 Bundle ID 统一换成真实值。
@@ -112,7 +112,7 @@ jobs:
           ls -lh build/MarathonTrainer.ipa
 
       - name: Upload unsigned IPA (Sideloadly)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: MarathonTrainer-unsigned-ipa
           path: build/MarathonTrainer.ipa
@@ -120,7 +120,7 @@ jobs:
 
       - name: Upload build logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-logs
           path: |
