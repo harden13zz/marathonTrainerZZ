@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var secure = SecureStore.shared
+    @State private var healthTestResult = ""
 
     var body: some View {
         Form {
@@ -34,13 +35,27 @@ struct SettingsView: View {
             Section("健康数据") {
                 Button("测试健康授权") {
                     Task {
+                        healthTestResult = "正在请求授权..."
                         let service = LiveHeartRateService()
                         service.startMonitoring(workoutStart: Date())
                         try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        if let hr = service.currentHeartRate, hr > 0 {
+                            healthTestResult = "✅ 授权成功，心率：\(Int(hr)) bpm"
+                        } else if let err = service.error {
+                            healthTestResult = "❌ 错误：\(err)"
+                        } else {
+                            healthTestResult = "⚠️  授权成功但暂无心率数据（确保 Apple Watch 正在测量）"
+                        }
                         service.stopMonitoring()
                     }
                 }
                 .tint(.blue)
+
+                if !healthTestResult.isEmpty {
+                    Text(healthTestResult)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .navigationTitle("设置")
