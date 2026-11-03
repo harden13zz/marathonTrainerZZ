@@ -122,14 +122,20 @@ final class WeatherService: ObservableObject {
 
     private func weatherCodeDescription(_ code: Int) -> String {
         switch code {
-        case 0: return "sunny"
-        case 1...3: return "cloudy"
-        case 45, 48: return "foggy"
-        case 51...67: return "rainy"
-        case 71...77: return "snowy"
-        case 80...82: return "rainy"
-        case 95...99: return "extreme"
-        default: return "cloudy"
+        case 0: return "晴"
+        case 1, 2, 3: return "多云"
+        case 45, 48: return "雾"
+        case 51, 53, 55: return "毛毛雨"
+        case 56, 57: return "冻雨"
+        case 61, 63, 65: return "雨"
+        case 66, 67: return "冻雨"
+        case 71, 73, 75: return "雪"
+        case 77: return "雪粒"
+        case 80, 81, 82: return "阵雨"
+        case 85, 86: return "阵雪"
+        case 95: return "雷雨"
+        case 96, 99: return "强雷雨"
+        default: return "未知"
         }
     }
 

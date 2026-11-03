@@ -31,6 +31,10 @@ struct SettingsView: View {
                     .keyboardType(.decimalPad)
                 TextField("目标完赛时间 (分钟)", text: $secure.targetTime)
                     .keyboardType(.numberPad)
+                    .foregroundStyle(.secondary)
+                Text("例如：270 分钟 = 4 小时 30 分")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("天气与定位") {

@@ -241,34 +241,14 @@ struct RecoveryBadgeView: View {
     }
 
     private var recoveryExplanation: String {
-        switch recovery.recoveryLevel {
-        case .normal:
-            return "各项指标正常，可以正常训练"
-        case .mildFatigue:
-            var reasons: [String] = []
-            if let hrv = recovery.morningHrvSdnn, hrv < 50 {
-                reasons.append("HRV 偏低")
+        if recovery.recoveryReasons.isEmpty {
+            switch recovery.recoveryLevel {
+            case .normal: return "各项指标正常，可以正常训练"
+            case .mildFatigue: return "建议降低训练强度"
+            case .highFatigue: return "建议休息"
             }
-            if let sleep = recovery.sleepTotalMin, sleep < 7 * 60 {
-                reasons.append("睡眠不足")
-            }
-            if let hr = recovery.restingHr, hr > 75 {
-                reasons.append("静息心率偏高")
-            }
-            return "建议降低强度：\(reasons.joined(separator: "、"))"
-        case .highFatigue:
-            var reasons: [String] = []
-            if let hrv = recovery.morningHrvSdnn, hrv < 40 {
-                reasons.append("HRV 过低")
-            }
-            if let sleep = recovery.sleepTotalMin, sleep < 6 * 60 {
-                reasons.append("严重睡眠不足")
-            }
-            if let hr = recovery.restingHr, hr > 85 {
-                reasons.append("静息心率过高")
-            }
-            return "建议休息：\(reasons.joined(separator: "、"))"
         }
+        return recovery.recoveryReasons.joined(separator: "、")
     }
 }
 

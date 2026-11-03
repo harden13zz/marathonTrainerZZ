@@ -118,6 +118,7 @@ struct RecoverySnapshot: Codable, Equatable {
     var sleepTotalMin: Double?
     var sleepDeepMin: Double?
     var recoveryLevel: RecoveryLevel
+    var recoveryReasons: [String] = []
 
     enum RecoveryLevel: String, Codable {
         case normal
